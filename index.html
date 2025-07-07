@@ -52,7 +52,7 @@
 </head>
 <body>
 
-  <h1>Snake Game</h1>
+  <h1>Snake Cess</h1>
    <p class="score">Score: <span id="score">0</span></p>
   <canvas id="game" width="400" height="400"></canvas>
 
@@ -118,8 +118,13 @@
         gameOver = false;
     });
 
-
-  
+    document.addEventListener("keydown", (event) => {
+    if (gameOver && (event.key === "Enter" || event.keyCode === 13)) {
+        document.getElementById("game-over-message").style.display = "none";
+        initGame();
+        gameOver = false;
+    }
+    });
 
 
     function setDirection(dir) {
