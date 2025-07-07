@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Snake Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    canvas {
+      background: #222;
+      margin-top: 20px;
+      touch-action: none;
+    }
+
+    .score {
+      font-size: 20px;
+      margin-top: 10px;
+    }
+
+    .controls {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(3, 60px);
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .btn {
+      background: #333;
+      color: white;
+      padding: 15px;
+      border: none;
+      font-size: 18px;
+      border-radius: 8px;
+    }
+
+    @media (min-width: 768px) {
+      .controls {
+        display: none; /* Nascondi controlli su desktop */
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Snake Game</h1>
+   <p class="score">Score: <span id="score">0</span></p>
+  <canvas id="game" width="400" height="400"></canvas>
+
+  <div class="controls">
+    <div></div>
+    <button class="btn" onclick="setDirection('up')">↑</button>
+    <div></div>
+    <button class="btn" onclick="setDirection('left')">←</button>
+    <div></div>
+    <button class="btn" onclick="setDirection('right')">→</button>
+    <div></div>
+    <button class="btn" onclick="setDirection('down')">↓</button>
+    <div></div>
+  </div>
+
+  <div id="game-over-message" style="display:none; text-align: center; font-size: 24px;">
+  Hai perso!<br>
+  <button id="restart-btn" style="margin-top: 10px; padding: 10px 20px; font-size: 18px; border-radius: 8px; background: #444; color: white; border: none;">
+    Ricomincia
+  </button>
+  </div>
+
+
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const box = 20;
+    const rows = canvas.width / box;
+    const cols = canvas.height / box;
+
+    let snake, food, dx, dy, score;
+    let gameInterval;
+    let gameOver = false;
+
+    const scoreDisplay = document.getElementById("score");
+
+    function initGame() {
+      snake = [{ x: 9 * box, y: 9 * box }];
+      food = {
+        x: Math.floor(Math.random() * rows) * box,
+        y: Math.floor(Math.random() * cols) * box
+      };
+      dx = box;
+      dy = 0;
+      score = 0;
+      scoreDisplay.textContent = score;
+
+      if (gameInterval) clearInterval(gameInterval);
+      gameInterval = setInterval(draw, 120);
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowUp" && dy === 0) setDirection('up');
+      if (e.key === "ArrowDown" && dy === 0) setDirection('down');
+      if (e.key === "ArrowLeft" && dx === 0) setDirection('left');
+      if (e.key === "ArrowRight" && dx === 0) setDirection('right');
+    });
+
+    document.getElementById("restart-btn").addEventListener("click", () => {
+        document.getElementById("game-over-message").style.display = "none";
+        initGame();
+        gameOver = false;
+    });
+
+
+  
+
+
+    function setDirection(dir) {
+      if (dir === "up" && dy === 0) { dx = 0; dy = -box; }
+      if (dir === "down" && dy === 0) { dx = 0; dy = box; }
+      if (dir === "left" && dx === 0) { dx = -box; dy = 0; }
+      if (dir === "right" && dx === 0) { dx = box; dy = 0; }
+    }
+
+    function draw() {
+      ctx.fillStyle = "#222";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < snake.length; i++) {
+        ctx.fillStyle = i === 0 ? "#0f0" : "#0a0";
+        ctx.fillRect(snake[i].x, snake[i].y, box, box);
+      }
+
+      ctx.fillStyle = "red";
+      ctx.fillRect(food.x, food.y, box, box);
+
+      let headX = snake[0].x + dx;
+      let headY = snake[0].y + dy;
+
+      // Teletrasporto ai bordi
+      if (headX >= canvas.width) headX = 0;
+      if (headX < 0) headX = canvas.width - box;
+      if (headY >= canvas.height) headY = 0;
+      if (headY < 0) headY = canvas.height - box;
+
+      // Collisione con se stesso
+      if (snake.some(segment => segment.x === headX && segment.y === headY)) {
+        gameOver=true;
+        clearInterval(gameInterval);
+        document.getElementById("game-over-message").style.display = "block";
+        return;
+      }
+
+      snake.unshift({ x: headX, y: headY });
+
+      if (headX === food.x && headY === food.y) {
+        score++;
+        scoreDisplay.textContent = score;
+        food = {
+          x: Math.floor(Math.random() * rows) * box,
+          y: Math.floor(Math.random() * cols) * box
+        };
+      } else {
+        snake.pop();
+      }
+    }
+
+    initGame(); // Avvia il gioco all'inizio
+  </script>
+
+</body>
+</html>
